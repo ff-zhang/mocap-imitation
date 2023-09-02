@@ -91,15 +91,17 @@ class Movement:
         return self.trans[self.count], quats
 
     def step(self, m: mj.MjModel, d: mj.MjData) -> None:
+        curr = np.copy(d.qpos)
         """
         data.qpos breakdown
-              [:3] - (x, y, z) Cartesian coordinate of the pelvis
+              [:3] - (x, y, z) Cartesian coordinate of the pelvis 
             [3:99] - (w, x, y, z) rotational quaterion of each part relative to its parent
         """
         center, quats = move.get_next_action()
         d.qpos[: 3] = center
         d.qpos[3: 3 + len(quats)] = quats
 
+        mj.mj_differentiatePos(m, d.qvel, m.opt.timestep, curr, d.qpos)
         mj.mj_step(m, d)
 
         if self.end:
@@ -108,11 +110,12 @@ class Movement:
 
 
 if __name__ == '__main__':
+    import time
+
     model, data = load_model('models/xml/humanoid_mesh.xml')
     move = Movement('data/ACCAD/Female1Running_c3d/C5 - walk to run_poses.npz', start=0)
 
     try:
-        import time
         view = viewer.launch_passive(model, data)
         debug = False
 
@@ -121,49 +124,35 @@ if __name__ == '__main__':
         debug = True
 
     if debug:
-        qvel_max, qacc_max, qacc_39 = [], [], []
+        qvel_max, qacc_max = [], []
 
     while not move.end:
         move.step(model, data)
 
+        if view and view.is_running():
+            view.sync()
+            time.sleep(model.opt.timestep)
+
         if debug:
             qvel_max.append(max(data.qvel))
             qacc_max.append(max(data.qacc))
-            qacc_39.append(data.qacc[42])
 
-        if view:
-            view.sync()
-            time.sleep(0.01)
-
-    if view:
+    if view and view.is_running():
         view.close()
 
     if debug:
         import matplotlib.pyplot as plt
 
-        # plt.figure()
-        # plt.title('Velocity')
-        # plt.plot(qvel_max)
-        # plt.xlabel(r'Time ($t$)')
-        # # plt.xlim(400, len(qvel_max))
-        # plt.ylabel(r'Velocity ($m/s$)')
-        # plt.ylim(0, 50)
-        # plt.show()
+        plt.figure()
+        plt.title('Max Velocity')
+        plt.plot(qvel_max)
+        plt.xlabel(r'Time ($t$)')
+        plt.ylabel(r'Acceleration ($m/s$)')
+        plt.show()
 
         plt.figure()
         plt.title('Max Acceleration')
         plt.plot(qacc_max)
         plt.xlabel(r'Time ($t$)')
-        # plt.xlim(400, len(qacc_max))
         plt.ylabel(r'Acceleration ($m/s^2$)')
-        plt.ylim(0, 1000)
-        plt.show()
-
-        plt.figure()
-        plt.title('Acceleration (DOF 39)')
-        plt.plot(qacc_39)
-        plt.xlabel(r'Time ($t$)')
-        # plt.xlim(400, len(qacc_max))
-        plt.ylabel(r'Acceleration ($m/s^2$)')
-        plt.ylim(0, 1000)
         plt.show()
