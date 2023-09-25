@@ -36,11 +36,7 @@ def load_smpl_data(file_path: str) -> tuple[np.array, np.array]:
 
 
 class Movement:
-    """"""
-    def __init__(self, data_file: str, start: int = 0) -> None:
-        # self.model = load_model(model_path)
-        # self.data = load_smpl_data(data_path)
-
+    def __init__(self, data_file: str, start: int = 0, joints: list[int] = None) -> None:
         self.pose, self.trans = load_smpl_data(data_file)
 
         self.init_pos = self.pose[0]
@@ -49,12 +45,9 @@ class Movement:
 
         self.end = self.count == self.num_frames - 1
 
-    def get_next_action(self) -> np.array:
-        self.count += 1
-        if self.count == self.num_frames - 1:
-            self.end = True
-
         """
+        Relationship between joints and their labelling:
+        
         Pelvis [0]
           |  L_Hip [1]
           |    |  L_Knee [4]
@@ -80,28 +73,43 @@ class Movement:
           |    |    |    |    |    |    |  R_Wrist [21]
           |----|----|----|----|----|----|----|- R_Hand [23]
         """
-        quats = np.array(([]))
+        self.joints = joints if joints else [0, 1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12, 15, 13, 16, 18, 20, 14, 17, 19, 21]
 
-        # parts = [1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12, 15, 13, 16, 18, 20, 22, 14, 17, 19, 21, 23    # includes hands
-        parts = [0, 1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12, 15, 13, 16, 18, 20, 14, 17, 19, 21]
-        for i in parts:
+    def get_next_action(self) -> np.array:
+        self.count += 1
+        if self.count == self.num_frames - 1:
+            self.end = True
+
+        quats = np.array(([]))
+        for i in self.joints:
             r = scipy.spatial.transform.Rotation.from_rotvec(self.pose[self.count][i]).as_quat()
             quats = np.append(quats, np.append(r[3], r[:3]))
 
         return self.trans[self.count], quats
 
-    def step(self, m: mj.MjModel, d: mj.MjData) -> None:
-        curr = np.copy(d.qpos)
-        """
-        data.qpos breakdown
-              [:3] - (x, y, z) Cartesian coordinate of the pelvis 
-            [3:99] - (w, x, y, z) rotational quaterion of each part relative to its parent
-        """
-        center, quats = move.get_next_action()
+    def set_initial_position(self, m: mj.MjModel, d: mj.MjData) -> None:
+        center, quats = self.get_next_action()
         d.qpos[: 3] = center
         d.qpos[3: 3 + len(quats)] = quats
 
-        mj.mj_differentiatePos(m, d.qvel, m.opt.timestep, curr, d.qpos)
+        mj.mj_step(m, d)
+        d.qvel[: len(d.qvel)] = np.array([0] * len(d.qvel))
+        d.qacc[: len(d.qacc)] = np.array([0] * len(d.qacc))
+
+        return None
+
+    def step(self, m: mj.MjModel, d: mj.MjData) -> None:
+        """
+        data.qpos breakdown
+              [:3] - (x, y, z) Cartesian coordinate of the pelvis
+            [3:99] - (w, x, y, z) rotational quaterion of each part relative to its parent
+        """
+        center, quats = move.get_next_action()
+
+        # TODO: needed to prevent clipping into the ground, remove when issue is solved
+        d.qpos[: 3] = center + [0, 0, 0.2]
+        d.qpos[3: 3 + len(quats)] = quats
+
         mj.mj_step(m, d)
 
         if self.end:
@@ -109,33 +117,57 @@ class Movement:
             self.count = 0
 
 
-if __name__ == '__main__':
-    import time
-
-    model, data = load_model('models/xml/humanoid_mesh.xml')
-    move = Movement('data/ACCAD/Female1Running_c3d/C5 - walk to run_poses.npz', start=0)
-
-    try:
-        view = viewer.launch_passive(model, data)
-        debug = False
-
-    except RuntimeError:
-        view = None
-        debug = True
-
-    if debug:
-        qvel_max, qacc_max = [], []
+def simulate_move(m: mj.MjModel, d: mj.MjData, move: Movement,
+                  view: viewer.Handle = None, debug: dict = None) -> None:
+    # disables ALL contact forces to prevent blow-ups in acceleration due to clipping
+    m.opt.disableflags |= 1
 
     while not move.end:
-        move.step(model, data)
+        move.step(m, d)
 
         if view and view.is_running():
             view.sync()
             time.sleep(model.opt.timestep)
 
         if debug:
-            qvel_max.append(max(data.qvel))
-            qacc_max.append(max(data.qacc))
+            debug['qvel_max'].append(data.qvel[3])
+            debug['qacc_max'].append(data.qacc[3])
+
+    # re-enables contact forces for future (physics) simulations
+    model.opt.disableflags -= 1
+
+
+if __name__ == '__main__':
+    import time
+
+    model, data = load_model('models/xml/humanoid_mesh.xml')
+    move = Movement('data/ACCAD/Female1Running_c3d/C5 - walk to run_poses.npz', start=500)
+
+    try:
+        view = viewer.launch_passive(model, data)
+        debug = False
+        time.sleep(2)
+    except RuntimeError:
+        view = None
+        debug = True
+
+    if debug:
+        debug = {'qvel_max': [], 'qacc_max': []}
+
+    move.set_initial_position(model, data)
+    simulate_move(model, data, move, view, debug)
+
+    start = time.time()
+    while time.time() - start < 2.0:
+        mj.mj_step(model, data)
+
+        if view and view.is_running():
+            view.sync()
+            time.sleep(model.opt.timestep)
+
+        if debug:
+            debug['qvel_max'].append(max(data.qvel))
+            debug['qacc_max'].append(max(data.qacc))
 
     if view and view.is_running():
         view.close()
@@ -145,14 +177,14 @@ if __name__ == '__main__':
 
         plt.figure()
         plt.title('Max Velocity')
-        plt.plot(qvel_max)
+        plt.plot(debug['qvel_max'])
         plt.xlabel(r'Time ($t$)')
-        plt.ylabel(r'Acceleration ($m/s$)')
+        plt.ylabel(r'Velocity')
         plt.show()
 
         plt.figure()
         plt.title('Max Acceleration')
-        plt.plot(qacc_max)
+        plt.plot(debug['qacc_max'])
         plt.xlabel(r'Time ($t$)')
-        plt.ylabel(r'Acceleration ($m/s^2$)')
+        plt.ylabel(r'Acceleration')
         plt.show()
