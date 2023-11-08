@@ -1,6 +1,7 @@
 import mujoco as mj
 import mujoco.viewer as viewer
 
+import utils
 from move import Movement
 
 
@@ -14,9 +15,9 @@ def load_model(file_path: str) -> tuple[mj.MjModel, mj.MjData]:
 
 
 def simulate_move(m: mj.MjModel, d: mj.MjData, move: Movement, view: viewer.Handle = None,
-                  debug: dict = None) -> None:
+                  debug: bool = False) -> None:
     # disables ALL contact forces
-    m.opt.disableflags |= 1
+    # m.opt.disableflags |= 1
 
     while move.step(m, d):
         if view and view.is_running():
@@ -24,21 +25,27 @@ def simulate_move(m: mj.MjModel, d: mj.MjData, move: Movement, view: viewer.Hand
             time.sleep(model.opt.timestep)
 
         if debug:
-            debug['qvel_max'].append(data.qvel[3])
-            debug['qacc_max'].append(data.qacc[3])
+            utils.debug_capture(model, data)
 
     # re-enables contact forces for future (physics) simulations
-    m.opt.disableflags -= 1
+    # m.opt.disableflags -= 1
 
 
 if __name__ == '__main__':
     import time
 
+    data_files = [
+        'data/ACCAD/Female1Running_c3d/C5 - walk to run_poses.npz',
+        'data/ACCAD/Female1Walking_c3d/B18 - walk to leap to walk_poses.npz',
+        'data/ACCAD/Female1Gestures_c3d/D6- CartWheel_poses.npz',
+        'data/ACCAD/Male2MartialArtsKicks_c3d/G19-  reverse spin cresent left t2_poses.npz',
+    ]
+
     model, data = load_model('models/xml/humanoid_mesh.xml')
-    # move = Movement('data/ACCAD/Female1Running_c3d/C5 - walk to run_poses.npz')
-    # move = Movement('data/ACCAD/Female1Walking_c3d/B18 - walk to leap to walk_poses.npz', end=360)
-    move = Movement('data/ACCAD/Female1Gestures_c3d/D6- CartWheel_poses.npz', end=270)
-    # move = Movement('data/ACCAD/Male2MartialArtsKicks_c3d/G19-  reverse spin cresent left t2_poses.npz', end=150)
+    # move = Movement(data_files[0])
+    move = Movement(data_files[1], end=360, joints=[0, 1, 2, 3, 4, 5, 7, 8, 10, 11])
+    # move = Movement(data_files[2], end=270, offset=[0., 0., 0.1])
+    # move = Movement(data_files[3], end=150)
     model.opt.timestep = move.timestep
 
     try:
@@ -48,9 +55,6 @@ if __name__ == '__main__':
     except RuntimeError:
         view = None
         debug = True
-
-    if debug:
-        debug = {'qvel_max': [], 'qacc_max': []}
 
     move.set_initial_position(model, data)
     simulate_move(model, data, move, view, debug)
@@ -64,25 +68,10 @@ if __name__ == '__main__':
             time.sleep(model.opt.timestep)
 
         if debug:
-            debug['qvel_max'].append(max(data.qvel))
-            debug['qacc_max'].append(max(data.qacc))
+            utils.debug_capture(model, data)
 
     if view and view.is_running():
         view.close()
 
     if debug:
-        import matplotlib.pyplot as plt
-
-        plt.figure()
-        plt.title('Max Velocity')
-        plt.plot(debug['qvel_max'])
-        plt.xlabel(r'Time ($t$)')
-        plt.ylabel(r'Velocity')
-        plt.show()
-
-        plt.figure()
-        plt.title('Max Acceleration')
-        plt.plot(debug['qacc_max'])
-        plt.xlabel(r'Time ($t$)')
-        plt.ylabel(r'Acceleration')
-        plt.show()
+        utils.debug_plot()
