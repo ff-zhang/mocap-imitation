@@ -47,18 +47,23 @@
     <body name="Pelvis" pos="-0.0018 -0.90233 2.0282" quat="0.5 0.5 0.5 0.5">
       <freejoint name="Pelvis"/>
       <geom pos="0.0018 0.2233 0.0282" type="mesh" contype="1" conaffinity="1" mesh="Pelvis"/>
+      <site name="Pelvis"/>
       <body name="L_Hip" pos="0.0695 -0.0914 -0.0068">
         <joint name="L_Hip" type="ball" pos="0 0 0" limited="true"/>
         <geom pos="-0.0677 0.3147 -0.0214" type="mesh" contype="1" conaffinity="1" mesh="L_Hip"/>
+        <site name="L_Hip"/>
         <body name="L_Knee" pos="0.0343 -0.3752 -0.0045">
           <joint name="L_Knee" type="ball" pos="0 0 0"/>
           <geom pos="-0.102 0.6899 -0.0169" type="mesh" contype="1" conaffinity="1" mesh="L_Knee"/>
+          <site name="L_Knee"/>
           <body name="L_Ankle" pos="-0.0136 -0.398 -0.0437">
             <joint name="L_Ankle" type="ball" pos="0 0 0"/>
             <geom pos="-0.0884 1.0879 0.0268" type="mesh" contype="1" conaffinity="1" mesh="L_Ankle"/>
+            <site name="L_Ankle"/>
             <body name="L_Toe" pos="0.0264 -0.0558 0.1193">
               <joint name="L_Toe" type="ball" pos="0 0 0"/>
               <geom pos="-0.1148 1.1437 -0.0925" type="mesh" contype="1" conaffinity="1" mesh="L_Toe"/>
+              <site name="L_Toe"/>
             </body>
           </body>
         </body>
@@ -66,15 +71,19 @@
       <body name="R_Hip" pos="-0.0677 -0.0906 -0.0043">
         <joint name="R_Hip" type="ball" pos="0 0 0"/>
         <geom pos="0.0695 0.3139 -0.0239" type="mesh" contype="1" conaffinity="1" mesh="R_Hip"/>
+        <site name="R_Hip"/>
         <body name="R_Knee" pos="-0.0383 -0.3825 -0.0089">
           <joint name="R_Knee" type="ball" pos="0 0 0"/>
           <geom pos="0.1078 0.6964 -0.015" type="mesh" contype="1" conaffinity="1" mesh="R_Knee"/>
+          <site name="R_Knee"/>
           <body name="R_Ankle" pos="0.0158 -0.3984 -0.0423">
             <joint name="R_Ankle" type="ball" pos="0 0 0"/>
             <geom pos="0.092 1.0948 0.0273" type="mesh" contype="1" conaffinity="1" mesh="R_Ankle"/>
+            <site name="R_Ankle"/>
             <body name="R_Toe" pos="-0.0254 -0.0482 0.1234">
               <joint name="R_Toe" type="ball" pos="0 0 0"/>
               <geom pos="0.1174 1.143 -0.0961" type="mesh" contype="1" conaffinity="1" mesh="R_Toe"/>
+              <site name="R_Toe"/>
             </body>
           </body>
         </body>
@@ -82,36 +91,41 @@
       <body name="Torso" pos="-0.0025 0.1089 0.0267">
         <joint name="Torso" type="ball" pos="0 0 0"/>
         <geom pos="0.0043 0.1144 -0.0015" type="mesh" contype="1" conaffinity="1" mesh="Torso"/>
+        <site name="Torso"/>
         <body name="Spine" pos="0.0055 0.1352 0.0011">
           <joint name="Spine" type="ball" pos="0 0 0"/>
           <geom pos="-0.0012 -0.0208 -0.0026" type="mesh" contype="1" conaffinity="1" mesh="Spine"/>
+          <site name="Spine"/>
           <body name="Chest" pos="0.0014 0.0529 0.0254">
             <joint name="Chest" type="ball" pos="0 0 0"/>
             <geom pos="-0.0026 -0.0737 -0.028" type="mesh" contype="1" conaffinity="1" mesh="Chest"/>
+            <site name="Chest"/>
             <body name="Neck" pos="-0.0028 0.2139 -0.0428">
               <joint name="Neck" type="ball" pos="0 0 0"/>
               <geom pos="0.0002 -0.2876 0.0148" type="mesh" contype="1" conaffinity="1" mesh="Neck"/>
+              <site name="Neck"/>
               <body name="Head" pos="0.0052 0.065 0.0513">
                 <joint name="Head" type="ball" pos="0 0 0"/>
                 <geom pos="-0.005 -0.3526 -0.0365" type="mesh" contype="1" conaffinity="1" mesh="Head"/>
+                <site name="Head"/>
               </body>
             </body>
             <body name="L_Thorax" pos="0.0789 0.1218 -0.034">
               <joint name="L_Thorax" type="ball" pos="0 0 0"/>
               <geom pos="-0.0815 -0.1955 0.006" type="mesh" contype="1" conaffinity="1" mesh="L_Thorax"/>
+              <site name="L_Thorax"/>
               <body name="L_Shoulder" pos="0.0909 0.0305 -0.0089">
                 <joint name="L_Shoulder" type="ball" pos="0 0 0"/>
                 <geom pos="-0.1724 -0.226 0.0149" type="mesh" contype="1" conaffinity="1" mesh="L_Shoulder"/>
+                <site name="L_Shoulder"/>
                 <body name="L_Elbow" pos="0.2596 -0.0128 -0.0275">
                   <joint name="L_Elbow" type="ball" pos="0 0 0"/>
                   <geom pos="-0.432 -0.2132 0.0424" type="mesh" contype="1" conaffinity="1" mesh="L_Elbow"/>
+                  <site name="L_Elbow"/>
                   <body name="L_Wrist" pos="0.2493 0.009 -0.0011">
                     <joint name="L_Wrist" type="ball" pos="0 0 0"/>
                     <geom pos="-0.6813 -0.2222 0.0435" type="mesh" contype="1" conaffinity="1" mesh="L_Wrist"/>
-<!--                    <body name="L_Hand" pos="0.084 -0.0082 -0.015">-->
-<!--                      <joint name="L_Hand" type="ball" pos="0 0 0"/>-->
-<!--                      <geom pos="-0.7653 -0.214 0.0585" type="mesh" contype="1" conaffinity="1" mesh="L_Hand"/>-->
-<!--                    </body>-->
+                    <site name="L_Wrist"/>
                   </body>
                 </body>
               </body>
@@ -119,19 +133,19 @@
             <body name="R_Thorax" pos="-0.0817 0.1189 -0.0386">
               <joint name="R_Thorax" type="ball" pos="0 0 0"/>
               <geom pos="0.0791 -0.1926 0.0106" type="mesh" contype="1" conaffinity="1" mesh="R_Thorax"/>
+              <site name="R_Thorax"/>
               <body name="R_Shoulder" pos="-0.0961 0.0325 -0.0091">
                 <joint name="R_Shoulder" type="ball" pos="0 0 0"/>
                 <geom pos="0.1752 -0.2251 0.0197" type="mesh" contype="1" conaffinity="1" mesh="R_Shoulder"/>
+                <site name="R_Shoulder"/>
                 <body name="R_Elbow" pos="-0.2537 -0.0133 -0.0214">
                   <joint name="R_Elbow" type="ball" pos="0 0 0"/>
                   <geom pos="0.4289 -0.2118 0.0411" type="mesh" contype="1" conaffinity="1" mesh="R_Elbow"/>
+                  <site name="R_Elbow"/>
                   <body name="R_Wrist" pos="-0.2553 0.0078 -0.0056">
                     <joint name="R_Wrist" type="ball" pos="0 0 0"/>
                     <geom pos="0.6842 -0.2196 0.0467" type="mesh" contype="1" conaffinity="1" mesh="R_Wrist"/>
-<!--                    <body name="R_Hand" pos="-0.0846 -0.0062 -0.0103">-->
-<!--                      <joint name="R_Hand" type="ball" pos="0 0 0"/>-->
-<!--                      <geom pos="0.7688 -0.2134 0.057" type="mesh" contype="1" conaffinity="1" mesh="R_Hand"/>-->
-<!--                    </body>-->
+                    <site name="R_Wrist"/>
                   </body>
                 </body>
               </body>
@@ -164,7 +178,98 @@
     <general name="R_Elbow" joint="R_Elbow" actdim="-1"/>
     <general name="L_Wrist" joint="L_Wrist" actdim="-1"/>
     <general name="R_Wrist" joint="R_Wrist" actdim="-1"/>
-<!--    <general name="L_Hand" joint="L_Hand" actdim="-1"/>-->
-<!--    <general name="R_Hand" joint="R_Hand" actdim="-1"/>-->
   </actuator>
+  <sensor>
+    <velocimeter name="Pelvis_Vel" site="Pelvis"/>
+    <velocimeter name="L_Hip_Vel" site="L_Hip"/>
+    <velocimeter name="R_Hip_Vel" site="R_Hip"/>
+    <velocimeter name="Torso_Vel" site="Torso"/>
+    <velocimeter name="L_Knee_Vel" site="L_Knee"/>
+    <velocimeter name="R_Knee_Vel" site="R_Knee"/>
+    <velocimeter name="Spine_Vel" site="Spine"/>
+    <velocimeter name="L_Ankle_Vel" site="L_Ankle"/>
+    <velocimeter name="R_Ankle_Vel" site="R_Ankle"/>
+    <velocimeter name="Chest_Vel" site="Chest"/>
+    <velocimeter name="L_Toe_Vel" site="L_Toe"/>
+    <velocimeter name="R_Toe_Vel" site="R_Toe"/>
+    <velocimeter name="Neck_Vel" site="Neck"/>
+    <velocimeter name="L_Thorax_Vel" site="L_Thorax"/>
+    <velocimeter name="R_Thorax_Vel" site="R_Thorax"/>
+    <velocimeter name="Head_Vel" site="Head"/>
+    <velocimeter name="L_Shoulder_Vel" site="L_Shoulder"/>
+    <velocimeter name="R_Shoulder_Vel" site="R_Shoulder"/>
+    <velocimeter name="L_Elbow_Vel" site="L_Elbow"/>
+    <velocimeter name="R_Elbow_Vel" site="R_Elbow"/>
+    <velocimeter name="L_Wrist_Vel" site="L_Wrist"/>
+    <velocimeter name="R_Wrist_Vel" site="R_Wrist"/>
+
+    <accelerometer name="Pelvis_Acc" site="Pelvis"/>
+    <accelerometer name="L_Hip_Acc" site="L_Hip"/>
+    <accelerometer name="R_Hip_Acc" site="R_Hip"/>
+    <accelerometer name="Torso_Acc" site="Torso"/>
+    <accelerometer name="L_Knee_Acc" site="L_Knee"/>
+    <accelerometer name="R_Knee_Acc" site="R_Knee"/>
+    <accelerometer name="Spine_Acc" site="Spine"/>
+    <accelerometer name="L_Ankle_Acc" site="L_Ankle"/>
+    <accelerometer name="R_Ankle_Acc" site="R_Ankle"/>
+    <accelerometer name="Chest_Acc" site="Chest"/>
+    <accelerometer name="L_Toe_Acc" site="L_Toe"/>
+    <accelerometer name="R_Toe_Acc" site="R_Toe"/>
+    <accelerometer name="Neck_Acc" site="Neck"/>
+    <accelerometer name="L_Thorax_Acc" site="L_Thorax"/>
+    <accelerometer name="R_Thorax_Acc" site="R_Thorax"/>
+    <accelerometer name="Head_Acc" site="Head"/>
+    <accelerometer name="L_Shoulder_Acc" site="L_Shoulder"/>
+    <accelerometer name="R_Shoulder_Acc" site="R_Shoulder"/>
+    <accelerometer name="L_Elbow_Acc" site="L_Elbow"/>
+    <accelerometer name="R_Elbow_Acc" site="R_Elbow"/>
+    <accelerometer name="L_Wrist_Acc" site="L_Wrist"/>
+    <accelerometer name="R_Wrist_Acc" site="R_Wrist"/>
+
+    <force name="Pelvis_Frc" site="Pelvis"/>
+    <force name="L_Hip_Frc" site="L_Hip"/>
+    <force name="R_Hip_Frc" site="R_Hip"/>
+    <force name="Torso_Frc" site="Torso"/>
+    <force name="L_Knee_Frc" site="L_Knee"/>
+    <force name="R_Knee_Frc" site="R_Knee"/>
+    <force name="Spine_Frc" site="Spine"/>
+    <force name="L_Ankle_Frc" site="L_Ankle"/>
+    <force name="R_Ankle_Frc" site="R_Ankle"/>
+    <force name="Chest_Frc" site="Chest"/>
+    <force name="L_Toe_Frc" site="L_Toe"/>
+    <force name="R_Toe_Frc" site="R_Toe"/>
+    <force name="Neck_Frc" site="Neck"/>
+    <force name="L_Thorax_Frc" site="L_Thorax"/>
+    <force name="R_Thorax_Frc" site="R_Thorax"/>
+    <force name="Head_Frc" site="Head"/>
+    <force name="L_Shoulder_Frc" site="L_Shoulder"/>
+    <force name="R_Shoulder_Frc" site="R_Shoulder"/>
+    <force name="L_Elbow_Frc" site="L_Elbow"/>
+    <force name="R_Elbow_Frc" site="R_Elbow"/>
+    <force name="L_Wrist_Frc" site="L_Wrist"/>
+    <force name="R_Wrist_Frc" site="R_Wrist"/>
+
+    <torque name="Pelvis_Trq" site="Pelvis"/>
+    <torque name="L_Hip_Trq" site="L_Hip"/>
+    <torque name="R_Hip_Trq" site="R_Hip"/>
+    <torque name="Torso_Trq" site="Torso"/>
+    <torque name="L_Knee_Trq" site="L_Knee"/>
+    <torque name="R_Knee_Trq" site="R_Knee"/>
+    <torque name="Spine_Trq" site="Spine"/>
+    <torque name="L_Ankle_Trq" site="L_Ankle"/>
+    <torque name="R_Ankle_Trq" site="R_Ankle"/>
+    <torque name="Chest_Trq" site="Chest"/>
+    <torque name="L_Toe_Trq" site="L_Toe"/>
+    <torque name="R_Toe_Trq" site="R_Toe"/>
+    <torque name="Neck_Trq" site="Neck"/>
+    <torque name="L_Thorax_Trq" site="L_Thorax"/>
+    <torque name="R_Thorax_Trq" site="R_Thorax"/>
+    <torque name="Head_Trq" site="Head"/>
+    <torque name="L_Shoulder_Trq" site="L_Shoulder"/>
+    <torque name="R_Shoulder_Trq" site="R_Shoulder"/>
+    <torque name="L_Elbow_Trq" site="L_Elbow"/>
+    <torque name="R_Elbow_Trq" site="R_Elbow"/>
+    <torque name="L_Wrist_Trq" site="L_Wrist"/>
+    <torque name="R_Wrist_Trq" site="R_Wrist"/>
+  </sensor>
 </mujoco>
