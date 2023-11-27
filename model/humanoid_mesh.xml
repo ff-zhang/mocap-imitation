@@ -156,28 +156,28 @@
     </body>
   </worldbody>
   <actuator>
-    <general name="Pelvis" joint="Pelvis" actdim="-1"/>
-    <general name="L_Hip" joint="L_Hip" actdim="-1"/>
-    <general name="R_Hip" joint="R_Hip" actdim="-1"/>
-    <general name="Torso" joint="Torso" actdim="-1"/>
-    <general name="L_Knee" joint="L_Knee" actdim="-1"/>
-    <general name="R_Knee" joint="R_Knee" actdim="-1"/>
-    <general name="Spine" joint="Spine" actdim="-1"/>
-    <general name="L_Ankle" joint="L_Ankle" actdim="-1"/>
-    <general name="R_Ankle" joint="R_Ankle" actdim="-1"/>
-    <general name="Chest" joint="Chest" actdim="-1"/>
-    <general name="L_Toe" joint="L_Toe" actdim="-1"/>
-    <general name="R_Toe" joint="R_Toe" actdim="-1"/>
-    <general name="Neck" joint="Neck" actdim="-1"/>
-    <general name="L_Thorax" joint="L_Thorax" actdim="-1"/>
-    <general name="R_Thorax" joint="R_Thorax" actdim="-1"/>
-    <general name="Head" joint="Head" actdim="-1"/>
-    <general name="L_Shoulder" joint="L_Shoulder" actdim="-1"/>
-    <general name="R_Shoulder" joint="R_Shoulder" actdim="-1"/>
-    <general name="L_Elbow" joint="L_Elbow" actdim="-1"/>
-    <general name="R_Elbow" joint="R_Elbow" actdim="-1"/>
-    <general name="L_Wrist" joint="L_Wrist" actdim="-1"/>
-    <general name="R_Wrist" joint="R_Wrist" actdim="-1"/>
+    <general name="Pelvis" joint="Pelvis" gear="2"/>
+    <general name="L_Hip" joint="L_Hip" gear="2"/>
+    <general name="R_Hip" joint="R_Hip" gear="2"/>
+    <general name="Torso" joint="Torso" gear="2"/>
+    <general name="L_Knee" joint="L_Knee" gear="2"/>
+    <general name="R_Knee" joint="R_Knee" gear="2"/>
+    <general name="Spine" joint="Spine" gear="2"/>
+    <general name="L_Ankle" joint="L_Ankle" gear="2"/>
+    <general name="R_Ankle" joint="R_Ankle" gear="2"/>
+    <general name="Chest" joint="Chest" gear="2"/>
+    <general name="L_Toe" joint="L_Toe" gear="2"/>
+    <general name="R_Toe" joint="R_Toe" gear="2"/>
+    <general name="Neck" joint="Neck" gear="2"/>
+    <general name="L_Thorax" joint="L_Thorax" gear="2"/>
+    <general name="R_Thorax" joint="R_Thorax" gear="2"/>
+    <general name="Head" joint="Head" gear="2"/>
+    <general name="L_Shoulder" joint="L_Shoulder" gear="2"/>
+    <general name="R_Shoulder" joint="R_Shoulder" gear="2"/>
+    <general name="L_Elbow" joint="L_Elbow" gear="2"/>
+    <general name="R_Elbow" joint="R_Elbow" gear="2"/>
+    <general name="L_Wrist" joint="L_Wrist" gear="2"/>
+    <general name="R_Wrist" joint="R_Wrist" gear="2"/>
   </actuator>
   <sensor>
     <velocimeter name="Pelvis_Vel" site="Pelvis"/>
