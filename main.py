@@ -41,7 +41,7 @@ if __name__ == '__main__':
         'data/ACCAD/Male2MartialArtsKicks_c3d/G19-  reverse spin cresent left t2_poses.npz',
     ]
 
-    model, data = load_model('models/xml/humanoid_mesh.xml')
+    model, data = load_model('model/humanoid_mesh.xml')
     # move = Movement(data_files[0])
     move = Movement(data_files[1], end=360, joints=[0, 1, 2, 3, 4, 5, 7, 8, 10, 11])
     # move = Movement(data_files[2], end=270, offset=[0., 0., 0.1])
