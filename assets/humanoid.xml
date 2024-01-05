@@ -9,6 +9,7 @@
   <default class="main">
     <joint limited="true" range="0 1.047" armature="0.01"/>
     <geom contype="7" conaffinity="7" condim="1" margin="0.001" rgba="0.8 0.6 0.4 1"/>
+    <general ctrllimited="true" ctrlrange="-0.4 0.4"/>
   </default>
   <asset>
     <texture type="skybox" builtin="gradient" rgb1="0.4 0.5 0.6" rgb2="0 0 0" width="100" height="600"/>
@@ -156,28 +157,28 @@
     </body>
   </worldbody>
   <actuator>
-    <general name="Pelvis" joint="Pelvis" gear="2"/>
-    <general name="L_Hip" joint="L_Hip" gear="2"/>
-    <general name="R_Hip" joint="R_Hip" gear="2"/>
-    <general name="Torso" joint="Torso" gear="2"/>
-    <general name="L_Knee" joint="L_Knee" gear="2"/>
-    <general name="R_Knee" joint="R_Knee" gear="2"/>
-    <general name="Spine" joint="Spine" gear="2"/>
-    <general name="L_Ankle" joint="L_Ankle" gear="2"/>
-    <general name="R_Ankle" joint="R_Ankle" gear="2"/>
-    <general name="Chest" joint="Chest" gear="2"/>
-    <general name="L_Toe" joint="L_Toe" gear="2"/>
-    <general name="R_Toe" joint="R_Toe" gear="2"/>
-    <general name="Neck" joint="Neck" gear="2"/>
-    <general name="L_Thorax" joint="L_Thorax" gear="2"/>
-    <general name="R_Thorax" joint="R_Thorax" gear="2"/>
-    <general name="Head" joint="Head" gear="2"/>
-    <general name="L_Shoulder" joint="L_Shoulder" gear="2"/>
-    <general name="R_Shoulder" joint="R_Shoulder" gear="2"/>
-    <general name="L_Elbow" joint="L_Elbow" gear="2"/>
-    <general name="R_Elbow" joint="R_Elbow" gear="2"/>
-    <general name="L_Wrist" joint="L_Wrist" gear="2"/>
-    <general name="R_Wrist" joint="R_Wrist" gear="2"/>
+    <general name="Pelvis" joint="Pelvis" gear="100"/>
+    <general name="L_Hip" joint="L_Hip" gear="100"/>
+    <general name="R_Hip" joint="R_Hip" gear="100"/>
+    <general name="Torso" joint="Torso" gear="100"/>
+    <general name="L_Knee" joint="L_Knee" gear="100"/>
+    <general name="R_Knee" joint="R_Knee" gear="100"/>
+    <general name="Spine" joint="Spine" gear="100"/>
+    <general name="L_Ankle" joint="L_Ankle" gear="100"/>
+    <general name="R_Ankle" joint="R_Ankle" gear="100"/>
+    <general name="Chest" joint="Chest" gear="100"/>
+    <general name="L_Toe" joint="L_Toe" gear="100"/>
+    <general name="R_Toe" joint="R_Toe" gear="100"/>
+    <general name="Neck" joint="Neck" gear="100"/>
+    <general name="L_Thorax" joint="L_Thorax" gear="100"/>
+    <general name="R_Thorax" joint="R_Thorax" gear="100"/>
+    <general name="Head" joint="Head" gear="100"/>
+    <general name="L_Shoulder" joint="L_Shoulder" gear="100"/>
+    <general name="R_Shoulder" joint="R_Shoulder" gear="100"/>
+    <general name="L_Elbow" joint="L_Elbow" gear="100"/>
+    <general name="R_Elbow" joint="R_Elbow" gear="100"/>
+    <general name="L_Wrist" joint="L_Wrist" gear="100"/>
+    <general name="R_Wrist" joint="R_Wrist" gear="100"/>
   </actuator>
   <sensor>
     <velocimeter name="Pelvis_Vel" site="Pelvis"/>

@@ -83,7 +83,7 @@ if __name__ == '__main__':
     from main import load_model
     from move import Movement
 
-    model, data = load_model('model/humanoid_mesh.xml')
+    model, data = load_model('assets/humanoid_mesh.xml')
     move = Movement('data/ACCAD/Female1Gestures_c3d/D6- CartWheel_poses.npz', end=270)
     model.opt.timestep = move.timestep
 
