@@ -1,6 +1,6 @@
 <mujoco model="humanoid">
   <compiler angle="radian" autolimits="true"/>
-  <option viscosity="0.00002" integrator="implicitfast"/>
+  <option viscosity="0.00002" integrator="implicitfast" timestep="0.008333333333333333"/>
   <visual>
     <quality shadowsize="2048"/>
     <headlight ambient="0.4 0.4 0.4" diffuse="0.8 0.8 0.8" specular="0.1 0.1 0.1"/>
