@@ -43,21 +43,26 @@ class HumanoidEnv(MujocoEnv, EzPickle):
                           for root, _, files in os.walk(data_path) for name in files if name.endswith('.npz')]
         self.motion = Movement(data_file=self.movements[np.random.randint(0, len(self.movements))])
 
-        self.ref = mj.MjData(self.model)
+        self.target = mj.MjData(self.model)
         self.motion.set_position(self.model, self.data)
-        self.motion.set_position(self.model, self.ref)
+        self.motion.set_position(self.model, self.target)
 
     def _reset_simulation(self):
         MujocoEnv._reset_simulation(self)
-        mj.mj_resetData(model, self.ref)
+        mj.mj_resetData(model, self.target)
 
         # Choose new motion to imitate and initialize the models to its first pose.
         self.motion = Movement(data_file=self.movements[np.random.randint(0, len(self.movements))])
         self.motion.set_position(self.model, self.data)
-        self.motion.set_position(self.model, self.ref)
+        self.motion.set_position(self.model, self.target)
 
     def _get_obs(self):
-        return np.concatenate([self.data.qpos, self.data.qvel])
+        return {
+            'agent_qpos': self.model.data.qpos,
+            'agent_qvel': self.model.data.qvel,
+            'target_qpos': self.target.data.qpos,
+            'target_qvel': self.target.data.qvel,
+        }
 
     def step(self, action):
         self._step_mujoco_simulation(action, n_frames=self.frame_skip)
@@ -72,7 +77,7 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         center_agent = self.data.qpos[: 3]
         rot_agent = R.from_quat(np.reshape(self.data.qpos[3:], newshape=(-1, 4)))
 
-        # Computes the environment's reward function.
+        # Compute the reward function.
         # Taken from DeepMimic (https://dl.acm.org/doi/pdf/10.1145/3197517.3201311)
 
         # The pose reward which encourages the joint orientations to match the reference.
@@ -91,16 +96,22 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         # The end-effector reward encourages the humanoid's hands and feet to match the reference.
         # The index of the left, right feet and left, right hands are 10, 11, 22, 23 respectively.
         r_e = np.exp(-40 * np.sum(
-            np.take(self.data.xpos - self.ref.xpos, [10, 11, 20, 21], axis=0)
+            np.take(self.data.xpos - self.target.xpos, [10, 11, 20, 21], axis=0)
         ))
 
         # The center-of-mass reward penalizes deviations in the humanoid's center-of-mass.
         r_c = np.exp(-10 * np.linalg.norm(center_motion - center_agent, ord=2))
 
+        # Calculate the overall value of the reward function.
         w_p, w_v, w_e, w_c = 0.65, 0.1, 0.15, 0.1
         reward = w_p * r_p + w_v * r_v + w_e * r_e + w_c * r_c
 
-        # TODO: figure out the contents of the info dictionary
+        info = {
+            'reward_pose': r_p,
+            'reward_vel': r_v,
+            'reward_end': r_e,
+            'reward_center': r_c,
+        }
 
         # Returns (observation, reward, terminated, truncated, information)
         return self._get_obs(), reward, self.motion.curr > self.motion.end, False, info
@@ -117,6 +128,7 @@ class HumanoidEnv(MujocoEnv, EzPickle):
 
 if __name__ == '__main__':
     env = HumanoidEnv(data_path='data/ACCAD', frame_skip=1)
+    env.step(np.array([0.1] * env.model.nu))
 
     model = PPO('MlpPolicy', env, verbose=1)
     model.learn(total_timesteps=10_000)
