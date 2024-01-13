@@ -8,8 +8,6 @@ import gymnasium as gym
 from gymnasium.envs.mujoco.mujoco_env import MujocoEnv
 from gymnasium.utils import EzPickle
 
-from stable_baselines3 import PPO
-
 from move import Movement
 
 DEFAULT_SIZE = 480
@@ -49,7 +47,7 @@ class HumanoidEnv(MujocoEnv, EzPickle):
 
     def _reset_simulation(self):
         MujocoEnv._reset_simulation(self)
-        mj.mj_resetData(model, self.target)
+        mj.mj_resetData(self.model, self.target)
 
         # Choose new motion to imitate and initialize the models to its first pose.
         self.motion = Movement(data_file=self.movements[np.random.randint(0, len(self.movements))])
@@ -63,6 +61,10 @@ class HumanoidEnv(MujocoEnv, EzPickle):
             'target_qpos': self.target.data.qpos,
             'target_qvel': self.target.data.qvel,
         }
+
+    def _get_info(self):
+        # TODO: implement this
+        pass
 
     def step(self, action):
         self._step_mujoco_simulation(action, n_frames=self.frame_skip)
@@ -123,21 +125,9 @@ class HumanoidEnv(MujocoEnv, EzPickle):
             self.init_qvel + self.np_random.uniform(low=-c, high=c, size=self.model.nv)
         )
 
-        return self._get_obs(), info
-
-
-if __name__ == '__main__':
-    env = HumanoidEnv(data_path='data/ACCAD', frame_skip=1)
-    env.step(np.array([0.1] * env.model.nu))
-
-    model = PPO('MlpPolicy', env, verbose=1)
-    model.learn(total_timesteps=10_000)
-
-    vec_env = model.get_env()
-    obs = vec_env.reset()
-    for i in range(1000):
-        action, _states = model.predict(obs, deterministic=True)
-        obs, reward, done, info = vec_env.step(action)
-        vec_env.render()
-
-    env.close()
+        return self._get_obs(), {
+            'reward_pose': 0.,
+            'reward_vel': 0.,
+            'reward_end': 0.,
+            'reward_center': 0.,
+        }
