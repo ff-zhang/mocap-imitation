@@ -56,7 +56,9 @@ if __name__ == '__main__':
         view = None
         debug = True
 
-    move.set_initial_position(model, data)
+    move.set_position(model, data)
+    move.curr += 1
+
     simulate_move(model, data, move, view, debug)
 
     start = time.time()

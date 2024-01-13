@@ -87,5 +87,5 @@ if __name__ == '__main__':
     move = Movement('data/ACCAD/Female1Gestures_c3d/D6- CartWheel_poses.npz', end=270)
     model.opt.timestep = move.timestep
 
-    move.set_initial_position(model, data)
+    move.set_position(model, data)
     move.step(model, data)

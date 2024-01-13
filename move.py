@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-import scipy
 import mujoco as mj
+from scipy.spatial.transform import Rotation as R
 
 import utils
 
@@ -43,16 +43,16 @@ class Movement:
               |    |    |    |    |    |    |  R_Wrist [21]
               |----|----|----|----|----|----|----|- R_Hand [23]
 
-        The order of these elements is IMPORTANT.
+        The order of the joints in this list is IMPORTANT.
         """
         self.joints = [0, 1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12, 15, 13, 16, 18, 20, 14, 17, 19, 21]
         self.qpos_mask = np.append(np.array([1] * 3), np.zeros(4 * utils.NUM_JOINTS))
-        self.qvel_mask = np.append(np.array([1] * 3), np.zeros(3 * utils.NUM_JOINTS))
+        self.qvel_qacc_mask = np.append(np.array([1] * 3), np.zeros(3 * utils.NUM_JOINTS))
         for i in (joints if joints else self.joints):
             self.qpos_mask[4 * i + 3: 4 * i + 7] = [1] * 4
-            self.qvel_mask[3 * i + 3: 3 * i + 6] = [1] * 3
+            self.qvel_qacc_mask[3 * i + 3: 3 * i + 6] = [1] * 3
         self.qpos_mask = np.ma.make_mask(self.qpos_mask)
-        self.qvel_mask = np.ma.make_mask(self.qvel_mask)
+        self.qvel_qacc_mask = np.ma.make_mask(self.qvel_qacc_mask)
 
         self.offset = offset
 
@@ -69,18 +69,14 @@ class Movement:
 
         return self.pose, data['trans'], 1 / data['mocap_framerate']
 
-    def get_next_action(self) -> np.array:
-        self.curr += 1
-
-        quaternion = np.array(([]))
-        for i in self.joints:
-            r = scipy.spatial.transform.Rotation.from_rotvec(self.pose[self.curr][i]).as_quat()
-            quaternion = np.append(quaternion, np.append(r[3], r[:3]))
+    def get_action(self) -> np.array:
+        quaternion = R.from_rotvec(self.pose[self.curr]).as_quat()
+        quaternion = np.reshape(np.roll(quaternion, shift=1, axis=1), newshape=(-1,))
 
         return self.trans[self.curr], quaternion
 
-    def set_initial_position(self, m: mj.MjModel, d: mj.MjData) -> None:
-        center, quaternion = self.get_next_action()
+    def set_position(self, m: mj.MjModel, d: mj.MjData) -> None:
+        center, quaternion = self.get_action()
         d.qpos[: 3] = center + self.offset
         d.qpos[3: 3 + len(quaternion)] = quaternion
 
@@ -95,13 +91,10 @@ class Movement:
 
         # TODO: figure out why update step isn't computing free joint velocities
 
-        """
-        data.qpos breakdown
-              [:3] - (x, y, z) Cartesian coordinate of the pelvis
-            [3:99] - (w, x, y, z) rotational quaterion of each part relative to its parent
-        """
-        prev_qpos, prev_qvel = np.copy(d.qpos), np.copy(d.qvel)
-        center, quaternion = self.get_next_action()
+        prev_qpos, prev_qvel, prev_qacc = np.copy(d.qpos), np.copy(d.qvel), np.copy(d.qacc)
+        center, quaternion = self.get_action()
+        self.curr += 1
+
         d.qpos[self.qpos_mask] = np.append(center + self.offset, quaternion)[self.qpos_mask]
 
         mj.mj_differentiatePos(m, d.qvel, m.opt.timestep, prev_qpos, d.qpos)
