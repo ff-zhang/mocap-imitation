@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import numpy as np
 import mujoco as mj
@@ -27,10 +28,11 @@ class HumanoidEnv(MujocoEnv, EzPickle):
                  frame_skip: int = 5, **kwargs):
         self.metadata['render_fps'] = int(np.round(self.metadata['render_fps'] / frame_skip))
 
-        # Hard-coded values for the number of values in qpos and qvel.
-        obs_space = gym.spaces.Box(
-            low=-np.inf, high=np.inf, shape=(91 + 69,), dtype=np.float64
-        )
+        # Hard-coded values for the number of values in qpos (nv = 91) and qvel (nu = 69).
+        obs_space = gym.spaces.Dict({
+            'agent': gym.spaces.Box(low=-np.inf, high=np.inf, shape=(91 + 69,), dtype=np.float64),
+            'target': gym.spaces.Box(low=-np.inf, high=np.inf, shape=(91 + 69,), dtype=np.float64),
+        })
 
         MujocoEnv.__init__(
             self, os.path.abspath(model_path), frame_skip, observation_space=obs_space, **kwargs
@@ -54,12 +56,12 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         self.motion.set_position(self.model, self.data)
         self.motion.set_position(self.model, self.target)
 
+        return self._get_obs()
+
     def _get_obs(self):
         return {
-            'agent_qpos': self.model.data.qpos,
-            'agent_qvel': self.model.data.qvel,
-            'target_qpos': self.target.data.qpos,
-            'target_qvel': self.target.data.qvel,
+            'agent': np.append(self.data.qpos, self.data.qvel),
+            'target': np.append(self.target.qpos, self.target.qvel)
         }
 
     def _get_info(self):
@@ -116,7 +118,7 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         }
 
         # Returns (observation, reward, terminated, truncated, information)
-        return self._get_obs(), reward, self.motion.curr > self.motion.end, False, info
+        return self._get_obs(), reward, self.motion.curr >= self.motion.end, False, info
 
     def reset_model(self):
         c = 0.01
@@ -125,9 +127,4 @@ class HumanoidEnv(MujocoEnv, EzPickle):
             self.init_qvel + self.np_random.uniform(low=-c, high=c, size=self.model.nv)
         )
 
-        return self._get_obs(), {
-            'reward_pose': 0.,
-            'reward_vel': 0.,
-            'reward_end': 0.,
-            'reward_center': 0.,
-        }
+        return self._get_obs()
