@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 import numpy as np
 import mujoco as mj
@@ -64,10 +63,6 @@ class HumanoidEnv(MujocoEnv, EzPickle):
             'target': np.append(self.target.qpos, self.target.qvel)
         }
 
-    def _get_info(self):
-        # TODO: implement this
-        pass
-
     def step(self, action):
         self._step_mujoco_simulation(action, n_frames=self.frame_skip)
 
@@ -91,7 +86,7 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         # The velocity reward encourages each joint's angular velocity to match the reference.
         qvel_motion = np.zeros(self.model.nv)
         mj.mj_differentiatePos(
-         self.model, qvel_motion, self.dt, qpos_old, np.append(center_motion, quat_motion)
+            self.model, qvel_motion, self.dt, qpos_old, np.append(center_motion, quat_motion)
         )
         r_v = np.exp(-0.1 * np.sum(
             np.linalg.norm(np.reshape(self.data.qvel - qvel_motion, newshape=(-1, 3)), ord=2, axis=1) ** 2
@@ -100,7 +95,7 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         # The end-effector reward encourages the humanoid's hands and feet to match the reference.
         # The index of the left, right feet and left, right hands are 10, 11, 22, 23 respectively.
         r_e = np.exp(-40 * np.sum(
-            np.take(self.data.xpos - self.target.xpos, [10, 11, 20, 21], axis=0)
+            np.linalg.norm(np.take(self.data.xpos - self.target.xpos, [10, 11, 20, 21], axis=0), ord=2, axis=1) ** 2
         ))
 
         # The center-of-mass reward penalizes deviations in the humanoid's center-of-mass.
@@ -117,8 +112,10 @@ class HumanoidEnv(MujocoEnv, EzPickle):
             'reward_center': r_c,
         }
 
-        # Returns (observation, reward, terminated, truncated, information)
-        return self._get_obs(), reward, self.motion.curr >= self.motion.end, False, info
+        truncated = bool(np.sum(self.data.warning.number[4: 7]))
+
+        # Returns the observation, reward, terminated, truncated, and information.
+        return self._get_obs(), reward, self.motion.curr >= self.motion.end, truncated, info
 
     def reset_model(self):
         c = 0.01

@@ -9,7 +9,7 @@
   <default class="main">
     <joint limited="true" range="0 1.047" armature="0.01"/>
     <geom contype="7" conaffinity="7" condim="1" margin="0.001" rgba="0.8 0.6 0.4 1"/>
-    <general ctrllimited="true" ctrlrange="-0.4 0.4"/>
+    <general ctrllimited="true" ctrlrange="-0.3 0.3"/>
   </default>
   <asset>
     <texture type="skybox" builtin="gradient" rgb1="0.4 0.5 0.6" rgb2="0 0 0" width="100" height="600"/>
