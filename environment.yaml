@@ -13,4 +13,5 @@ dependencies:
   - werkzeug
   - chardet
   - tensorflow
+  - conda-forge::stable-baselines3
 prefix: /opt/homebrew/Caskroom/miniconda/base/envs/rl_mujoco
