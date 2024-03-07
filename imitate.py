@@ -3,6 +3,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.env_util import make_vec_env
 
 from env import HumanoidEnv
+from agent import ActorCriticPolicy
 
 
 class TensorboardCallback(BaseCallback):
@@ -26,8 +27,8 @@ if __name__ == '__main__':
     from stable_baselines3.common.env_checker import check_env
     check_env(env)
 
-    model = PPO(policy='MultiInputPolicy', env=env, verbose=1, tensorboard_log='./log/ppo_imitate_tensorboard')
-    model.learn(total_timesteps=10_000, callback=TensorboardCallback())
+    model = PPO(policy=ActorCriticPolicy, env=env, n_steps=2 ** 14, verbose=1, tensorboard_log='./log/ppo_imitate_tensorboard')
+    model.learn(total_timesteps=100_000, callback=TensorboardCallback())
     model.save('agent_imitate')
 
     model = PPO.load('agent_imitate')
@@ -37,6 +38,6 @@ if __name__ == '__main__':
     for i in range(1000):
         action, _states = model.predict(obs, deterministic=True)
         obs, reward, done, info = vec_env.step(action)
-        vec_env.render()
+        vec_env.render('human')
 
     env.close()
