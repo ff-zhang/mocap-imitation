@@ -7,9 +7,9 @@
   </visual>
   <statistic extent="3" center="0 0 1"/>
   <default class="main">
-    <joint limited="true" range="0 1.047" armature="0.01"/>
+    <joint limited="true" range="0 1.047" armature="0.05"/>
     <geom contype="7" conaffinity="7" condim="1" margin="0.001" rgba="0.8 0.6 0.4 1"/>
-    <general ctrllimited="true" ctrlrange="-0.3 0.3"/>
+    <general ctrllimited="true" ctrlrange="-0.4 0.4"/>
   </default>
   <asset>
     <texture type="skybox" builtin="gradient" rgb1="0.4 0.5 0.6" rgb2="0 0 0" width="100" height="600"/>
@@ -45,9 +45,10 @@
   <worldbody>
     <geom name="floor" size="100 100 0.2" type="plane" conaffinity="1" condim="3" material="MatPlane" rgba="0.8 0.9 0.8 1"/>
     <light pos="0 0 1.3" dir="0 0 -1" directional="true" cutoff="100" exponent="1" diffuse="1 1 1" specular="0.1 0.1 0.1"/>
-    <body name="Pelvis" pos="-0.0018 -0.90233 2.0282" quat="0.5 0.5 0.5 0.5">
+    <body name="Pelvis" pos="-0.0018 -0.90233 1.0282" quat="0.5 0.5 0.5 0.5">
       <freejoint name="Pelvis"/>
       <geom pos="0.0018 0.2233 0.0282" type="mesh" contype="1" conaffinity="1" mesh="Pelvis"/>
+      <camera name="track" mode="trackcom" pos="0 -5 0" xyaxes="1 0 0 0 0 1"/>
       <site name="Pelvis"/>
       <body name="L_Hip" pos="0.0695 -0.0914 -0.0068">
         <joint name="L_Hip" type="ball" pos="0 0 0" limited="true"/>
