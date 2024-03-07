@@ -27,8 +27,9 @@ if __name__ == '__main__':
     from stable_baselines3.common.env_checker import check_env
     check_env(env)
 
-    model = PPO(policy=ActorCriticPolicy, env=env, n_steps=2 ** 14, verbose=1, tensorboard_log='./log/ppo_imitate_tensorboard')
-    model.learn(total_timesteps=100_000, callback=TensorboardCallback())
+    model = PPO(policy=ActorCriticPolicy, env=env, n_steps=2**14, batch_size=256, n_epochs=8,
+                gamma=0.95, tensorboard_log='./log/ppo_imitate_tensorboard', verbose=1)
+    model.learn(total_timesteps=100_000, callback=TensorboardCallback(), progress_bar=True)
     model.save('agent_imitate')
 
     model = PPO.load('agent_imitate')

@@ -126,7 +126,7 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         return self._get_obs(), reward, self.motion.curr >= self.motion.end, truncated, info
 
     def reset_model(self):
-        c = 0.01
+        c = 0.005
         self.set_state(
             self.init_qpos + self.np_random.uniform(low=-c, high=c, size=self.model.nq),
             self.init_qvel + self.np_random.uniform(low=-c, high=c, size=self.model.nv)
