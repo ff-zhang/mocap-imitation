@@ -37,23 +37,31 @@ class HumanoidEnv(MujocoEnv, EzPickle):
             self, os.path.abspath(model_path), frame_skip, observation_space=obs_space, **kwargs
         )
         EzPickle.__init__(self, **kwargs)
+        self.target = mj.MjData(self.model)
 
         self.movements = [os.path.abspath(os.path.join(root, name))
                           for root, _, files in os.walk(data_path) for name in files if name.endswith('.npz')]
-        self.motion = Movement(data_file=self.movements[np.random.randint(0, len(self.movements))])
+        self._initialize_movement()
+        try:
+            self.mujoco_renderer.render(render_mode=kwargs['render_mode'])
+        except KeyError:
+            pass
 
-        self.target = mj.MjData(self.model)
+    def _initialize_movement(self):
+        # Choose new motion to imitate and initialize the models to its first pose.
+        while True:
+            try:
+                self.motion = Movement(data_file=self.movements[np.random.randint(0, len(self.movements))])
+                break
+            except KeyError:
+                pass
         self.motion.set_position(self.model, self.data)
         self.motion.set_position(self.model, self.target)
 
     def _reset_simulation(self):
         MujocoEnv._reset_simulation(self)
         mj.mj_resetData(self.model, self.target)
-
-        # Choose new motion to imitate and initialize the models to its first pose.
-        self.motion = Movement(data_file=self.movements[np.random.randint(0, len(self.movements))])
-        self.motion.set_position(self.model, self.data)
-        self.motion.set_position(self.model, self.target)
+        self._initialize_movement()
 
         return self._get_obs()
 
