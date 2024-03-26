@@ -42,10 +42,9 @@ if __name__ == '__main__':
     ]
 
     model, data = load_model('assets/humanoid.xml')
-    # move = Movement(data_files[0])
-    move = Movement(data_files[1], end=360, joints=[0, 1, 2, 3, 4, 5, 7, 8, 10, 11])
-    # move = Movement(data_files[2], end=270, offset=[0., 0., 0.1])
-    # move = Movement(data_files[3], end=150)
+    move = Movement(data_files[0], model)
+    # move = Movement(data_files[1], model, end=360)
+    # move = Movement(data_files[2], model, end=270, offset=[0., 0., 0.1])
     model.opt.timestep = move.timestep
 
     try:
@@ -56,7 +55,7 @@ if __name__ == '__main__':
         view = None
         debug = True
 
-    move.set_position(model, data)
+    move.set_movement(model, data)
     move.curr += 1
 
     simulate_move(model, data, move, view, debug)

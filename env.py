@@ -55,8 +55,8 @@ class HumanoidEnv(MujocoEnv, EzPickle):
                 break
             except KeyError:
                 pass
-        self.motion.set_position(self.model, self.data)
-        self.motion.set_position(self.model, self.target)
+        self.motion.set_movement(self.model, self.data)
+        self.motion.set_movement(self.model, self.target)
 
     def _reset_simulation(self):
         MujocoEnv._reset_simulation(self)

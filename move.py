@@ -2,20 +2,12 @@ import os
 
 import numpy as np
 import mujoco as mj
-from scipy.spatial.transform import Rotation as R
-
-import utils
+from scipy.spatial.transform import Slerp, Rotation as R
 
 
 class Movement:
-    def __init__(self, data_file: str, start: int = 0, end: int = np.inf,
-                 offset: list[float] = (0., 0., 0.), joints: list[int] = None) -> None:
-        self.pose, self.trans, self.timestep = self.load_smpl(data_file)
-        self.num_frames = self.pose.shape[0]
-
-        self.curr = start
-        self.end = min(end, self.num_frames - 1)
-
+    def __init__(self, data_file: str, m: mj.MjModel, start: int = 0, end: int = np.inf,
+                 offset: list[float] = (0., 0., 0.3)) -> None:
         """
         Relationship between joints and their labelling:
             Pelvis [0]
@@ -46,17 +38,22 @@ class Movement:
         The order of the joints in this list is IMPORTANT.
         """
         self.joints = [0, 1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12, 15, 13, 16, 18, 20, 14, 17, 19, 21]
-        self.qpos_mask = np.append(np.array([1] * 3), np.zeros(4 * utils.NUM_JOINTS))
-        self.qvel_qacc_mask = np.append(np.array([1] * 3), np.zeros(3 * utils.NUM_JOINTS))
-        for i in (joints if joints else self.joints):
-            self.qpos_mask[4 * i + 3: 4 * i + 7] = [1] * 4
-            self.qvel_qacc_mask[3 * i + 3: 3 * i + 6] = [1] * 3
-        self.qpos_mask = np.ma.make_mask(self.qpos_mask)
-        self.qvel_qacc_mask = np.ma.make_mask(self.qvel_qacc_mask)
-
         self.offset = offset
+        self.model = m
 
-    def load_smpl(self, file_path: str) -> tuple[np.array, np.array, float]:
+        self.pose, self.trans, self.timestep = self._load_smpl(data_file)
+        self.num_frames = self.pose.shape[0]
+
+        # Rotations and slerps have the same order as the joints.
+        self.rots = [R.from_rotvec(self.pose[:, j, :]) for j in self.joints]
+        self.slerp = [Slerp(self.timestep * np.arange(self.num_frames), rot) for rot in self.rots]
+
+        self.start, self.end = start, min(end, self.num_frames)
+        self.curr = self.start
+
+        self._init_frames()
+
+    def _load_smpl(self, file_path: str) -> tuple[np.array, np.array, float]:
         """ Loads SMPL pose and translation data from a .npz file """
 
         assert file_path[-4:] == '.npz'
@@ -64,40 +61,36 @@ class Movement:
             raise FileNotFoundError
 
         data = np.load(file_path)
-        self.pose = data['poses'][:, :3 * utils.NUM_JOINTS]
+        self.pose = data['poses'][:, : 3 * self.model.njnt]
         self.pose = self.pose.reshape((self.pose.shape[0], self.pose.shape[1] // 3, 3))
 
         return self.pose, data['trans'], 1 / data['mocap_framerate']
 
-    def get_action(self) -> np.array:
-        quaternion = R.from_rotvec(self.pose[self.curr]).as_quat()
-        quaternion = np.reshape(np.roll(quaternion, shift=1, axis=1), newshape=(-1,))
+    def _init_frames(self) -> None:
+        self.qpos = np.array([
+            np.roll(np.array([slerp(t).as_quat() for slerp in self.slerp]), shift=1, axis=1).reshape(-1)
+            for t in self.timestep * np.arange(self.num_frames)])
+        self.qpos = np.hstack([self.trans, self.qpos])
 
-        return self.trans[self.curr], quaternion
+        self.qvel = np.zeros(shape=(self.num_frames, self.model.nv))
+        for t in np.arange(self.start + 1, self.end):
+            mj.mj_differentiatePos(self.model, self.qvel[t], self.timestep, self.qpos[t - 1], self.qpos[t])
 
-    def set_position(self, m: mj.MjModel, d: mj.MjData) -> None:
-        center, quaternion = self.get_action()
-        d.qpos[: 3] = center + self.offset
-        d.qpos[3: 3 + len(quaternion)] = quaternion
+        self.qacc = (self.qvel - np.roll(self.qvel, shift=1, axis=0)) / self.timestep
+        self.qacc[0] = 0.
 
-        mj.mj_step(m, d)
-        d.qvel[: len(d.qvel)] = np.array([0] * len(d.qvel))
-        d.qacc[: len(d.qacc)] = np.array([0] * len(d.qacc))
+    def set_movement(self, m: mj.MjModel, d: mj.MjData) -> None:
+        d.qpos = self.qpos[self.curr]
+        d.qvel = self.qvel[self.curr]
+        d.qacc = self.qacc[self.curr]
 
     def step(self, m: mj.MjModel, d: mj.MjData) -> bool:
         if self.curr == self.end:
             print('Reached of the movement.')
             return False
 
-        # TODO: figure out why update step isn't computing free joint velocities
-
-        prev_qpos, prev_qvel, prev_qacc = np.copy(d.qpos), np.copy(d.qvel), np.copy(d.qacc)
-        center, quaternion = self.get_action()
+        self.set_movement(m, d)
         self.curr += 1
-
-        d.qpos[self.qpos_mask] = np.append(center + self.offset, quaternion)[self.qpos_mask]
-
-        mj.mj_differentiatePos(m, d.qvel, m.opt.timestep, prev_qpos, d.qpos)
         mj.mj_forward(m, d)
 
         return True
