@@ -51,15 +51,19 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         # Choose new motion to imitate and initialize the models to its first pose.
         while True:
             try:
-                self.motion = Movement(data_file=self.movements[np.random.randint(0, len(self.movements))])
+                n = np.random.randint(0, len(self.movements))
+                self.motion = Movement(data_file=self.movements[n], m=self.model)
                 break
             except KeyError:
                 pass
+
         self.motion.set_movement(self.model, self.data)
-        self.motion.set_movement(self.model, self.target)
+        self.motion.curr += 1
+        self.motion.set_movement(self.model, self.target, t=self.motion.curr)
 
     def _reset_simulation(self):
         MujocoEnv._reset_simulation(self)
+        mj.mj_resetData(self.model, self.data)
         mj.mj_resetData(self.model, self.target)
         self._initialize_movement()
 
@@ -80,7 +84,7 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         center_motion, quat_motion = self.motion.get_action()
         rot_motion = R.from_quat(np.reshape(quat_motion, newshape=(-1, 4)))
 
-        # Resulting position of the humanoid after the action given by the agent.
+        # Resulting position of the humanoid after the action given by the agent at timestep t.
         center_agent = self.data.qpos[: 3]
         rot_agent = R.from_quat(np.reshape(self.data.qpos[3:], newshape=(-1, 4)))
 
@@ -92,16 +96,12 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         r_p = np.exp(-2 * np.sum(np.linalg.norm(rot_diff.as_rotvec(), ord=2, axis=1) ** 2))
 
         # The velocity reward encourages each joint's angular velocity to match the reference.
-        qvel_motion = np.zeros(self.model.nv)
-        mj.mj_differentiatePos(
-            self.model, qvel_motion, self.dt, qpos_old, np.append(center_motion, quat_motion)
-        )
         r_v = np.exp(-0.1 * np.sum(
             np.linalg.norm(np.reshape(self.data.qvel - qvel_motion, newshape=(-1, 3)), ord=2, axis=1) ** 2
         ))
 
         # The end-effector reward encourages the humanoid's hands and feet to match the reference.
-        # The index of the left, right feet and left, right hands are 10, 11, 22, 23 respectively.
+        # The index of the left, right feet and left, right hands is 10, 11, 22, 23 respectively.
         r_e = np.exp(-40 * np.sum(
             np.linalg.norm(np.take(self.data.xpos - self.target.xpos, [10, 11, 20, 21], axis=0), ord=2, axis=1) ** 2
         ))
@@ -121,6 +121,11 @@ class HumanoidEnv(MujocoEnv, EzPickle):
         }
 
         truncated = bool(np.sum(self.data.warning.number[4: 7]))
+
+        # Update the reference motion to the frame for the upcoming timestep t + 1.
+        self.motion.curr += 1
+        if self.motion.curr < self.motion.end:
+            self.motion.set_movement(self.model, self.target)
 
         # Returns the observation, reward, terminated, truncated, and information.
         return self._get_obs(), reward, self.motion.curr >= self.motion.end, truncated, info

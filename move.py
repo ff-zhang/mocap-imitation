@@ -44,10 +44,6 @@ class Movement:
         self.pose, self.trans, self.timestep = self._load_smpl(data_file)
         self.num_frames = self.pose.shape[0]
 
-        # Rotations and slerps have the same order as the joints.
-        self.rots = [R.from_rotvec(self.pose[:, j, :]) for j in self.joints]
-        self.slerp = [Slerp(self.timestep * np.arange(self.num_frames), rot) for rot in self.rots]
-
         self.start, self.end = start, min(end, self.num_frames)
         self.curr = self.start
 
@@ -67,22 +63,42 @@ class Movement:
         return self.pose, data['trans'], 1 / data['mocap_framerate']
 
     def _init_frames(self) -> None:
-        self.qpos = np.array([
+        """ Initializes frame positions, velocities, and accelerations in the format expected by
+        MuJoCo models. """
+
+        # Rotations and slerps have the same order as the joints.
+        self.rots = [R.from_rotvec(self.pose[:, j, :]) for j in self.joints]
+        self.slerp = [Slerp(self.timestep * np.arange(self.num_frames), rot) for rot in self.rots]
+
+        self.quats = np.array([
             np.roll(np.array([slerp(t).as_quat() for slerp in self.slerp]), shift=1, axis=1).reshape(-1)
             for t in self.timestep * np.arange(self.num_frames)])
-        self.qpos = np.hstack([self.trans, self.qpos])
+        self.qpos = np.hstack([self.trans, self.quats])
 
         self.qvel = np.zeros(shape=(self.num_frames, self.model.nv))
         for t in np.arange(self.start + 1, self.end):
             mj.mj_differentiatePos(self.model, self.qvel[t], self.timestep, self.qpos[t - 1], self.qpos[t])
 
+        # finite distance approximation of the acceleration - a(t) = [v(t + h) - v(t)] / h
         self.qacc = (self.qvel - np.roll(self.qvel, shift=1, axis=0)) / self.timestep
         self.qacc[0] = 0.
 
-    def set_movement(self, m: mj.MjModel, d: mj.MjData) -> None:
-        d.qpos = self.qpos[self.curr]
-        d.qvel = self.qvel[self.curr]
-        d.qacc = self.qacc[self.curr]
+    def set_movement(self, m: mj.MjModel, d: mj.MjData, t: int = None) -> None:
+        """ Updates the state of qpos, qvel, qacc in the massed model.
+         Note this does not increment the timestep of the motion. """
+
+        if t is None:
+            t = self.curr
+
+        d.qpos = self.qpos[t]
+        d.qvel = self.qvel[t]
+        d.qacc = self.qacc[t]
+
+    def get_movement(self, t: int = None) -> np.array:
+        if t is None:
+            t = self.curr
+
+        return self.trans[t], self.quats[t], self.qvel[t], self.qacc[t]
 
     def step(self, m: mj.MjModel, d: mj.MjData) -> bool:
         if self.curr == self.end:
