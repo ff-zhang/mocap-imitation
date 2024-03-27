@@ -78,10 +78,10 @@ class HumanoidEnv(MujocoEnv, EzPickle):
     def step(self, action):
         self._step_mujoco_simulation(action, n_frames=self.frame_skip)
 
-        # Position of target motion at times t - 1 and t.
-        qpos_old = np.append(*self.motion.get_action())
-        self.motion.curr += 1
-        center_motion, quat_motion = self.motion.get_action()
+        # TODO: figure out how to handle the case where self.frame_skip != 1
+
+        # Position of target motion at the current timestep t.
+        center_motion, quat_motion, qvel_motion, _ = self.motion.get_movement()
         rot_motion = R.from_quat(np.reshape(quat_motion, newshape=(-1, 4)))
 
         # Resulting position of the humanoid after the action given by the agent at timestep t.
